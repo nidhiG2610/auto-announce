@@ -1,0 +1,51 @@
+{
+  "name": "@a11y_craft/auto-announce",
+  "version": "1.0.0",
+  "description": "Zero-config screen reader announcements — import once, works everywhere automatically",
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "aria",
+    "aria-live",
+    "screen-reader",
+    "wcag",
+    "voiceover",
+    "nvda",
+    "announcer",
+    "auto"
+  ],
+  "author": "Nidhi Gajera",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nidhiG2610/auto-announce.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": true,
+  "scripts": {
+    "build": "tsup",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "ts-jest": "^29.1.4",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.5"
+  }
+}
