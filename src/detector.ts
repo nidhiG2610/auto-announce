@@ -29,8 +29,15 @@ export function isVisible(el: Element): boolean {
 }
 
 export function alreadyHasLiveRegion(el: Element): boolean {
-  // Skip if the element itself or any ancestor is already an aria-live region
-  return el.hasAttribute('aria-live') || !!el.closest('[aria-live]');
+  // Skip if the element itself has aria-live
+  if (el.hasAttribute('aria-live')) return true;
+  // Walk up the tree manually — el.closest() not available in IE11
+  let parent = el.parentElement;
+  while (parent) {
+    if (parent.hasAttribute('aria-live')) return true;
+    parent = parent.parentElement;
+  }
+  return false;
 }
 
 export function extractText(el: Element): string {
@@ -41,16 +48,28 @@ export function extractText(el: Element): string {
   const labelledBy = el.getAttribute('aria-labelledby');
   if (labelledBy) {
     const labelEl = document.getElementById(labelledBy);
-    if (labelEl) return labelEl.textContent?.trim() ?? '';
+    // Only read from elements that are descendants of the notification itself
+    // or siblings — never from arbitrary page elements to prevent announcing
+    // unintended sensitive content
+    if (labelEl && el.contains(labelEl)) {
+      return labelEl.textContent?.trim() ?? '';
+    }
   }
 
   return el.textContent?.trim() ?? '';
 }
 
 export function matchesSelectors(el: Element, selectors: string[]): boolean {
+  // Support IE11's vendor-prefixed version
+  const matchFn: ((sel: string) => boolean) | undefined =
+    el.matches?.bind(el) ??
+    (el as Element & { msMatchesSelector?: (s: string) => boolean }).msMatchesSelector?.bind(el);
+
+  if (!matchFn) return false;
+
   return selectors.some((sel) => {
     try {
-      return el.matches(sel);
+      return matchFn(sel);
     } catch {
       return false;
     }

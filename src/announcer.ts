@@ -52,7 +52,20 @@ export function announce(message: string, politeness: Politeness = 'polite'): vo
   if (isDuplicate(safe)) return;
 
   ensureRegions();
-  const el = politeness === 'assertive' ? assertiveRegion! : politeRegion!;
+  let el = politeness === 'assertive' ? assertiveRegion! : politeRegion!;
+
+  // If the region was removed from the DOM (e.g. innerHTML reset), recreate it
+  // Use ownerDocument.contains() instead of isConnected for broader browser support
+  if (!el.ownerDocument || !el.ownerDocument.documentElement.contains(el)) {
+    if (politeness === 'assertive') {
+      assertiveRegion = createRegion('assertive');
+      el = assertiveRegion;
+    } else {
+      politeRegion = createRegion('polite');
+      el = politeRegion;
+    }
+  }
+
   el.textContent = '';
   setTimeout(() => { el.textContent = safe; }, 0);
 }

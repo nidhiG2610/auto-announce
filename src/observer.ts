@@ -48,26 +48,29 @@ function walkTree(
   // Check the node itself
   checkElement(el, selectors, ignoreSelectors, politenessOverride);
 
-  // Check its descendants
+  // Check its descendants — use for loop instead of NodeList.forEach for broader compat
   const descendants = el.querySelectorAll(selectors.join(','));
-  descendants.forEach((child) =>
-    checkElement(child, selectors, ignoreSelectors, politenessOverride),
-  );
+  for (let i = 0; i < descendants.length; i++) {
+    checkElement(descendants[i], selectors, ignoreSelectors, politenessOverride);
+  }
 }
 
 export function startObserver(options: AutoAnnounceOptions = {}): void {
   if (typeof document === 'undefined') return;
   if (observer) return; // already running
 
-  const selectors = [...DEFAULT_SELECTORS, ...(options.selectors ?? [])];
-  const ignoreSelectors = options.ignore ?? [];
+  const MAX_CUSTOM_SELECTORS = 20;
+  const customSelectors = (options.selectors ?? []).slice(0, MAX_CUSTOM_SELECTORS);
+  const selectors = [...DEFAULT_SELECTORS, ...customSelectors];
+  const ignoreSelectors = (options.ignore ?? []).slice(0, MAX_CUSTOM_SELECTORS);
   const politenessOverride = options.politeness;
 
   observer = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-      mutation.addedNodes.forEach((node) =>
-        walkTree(node, selectors, ignoreSelectors, politenessOverride),
-      );
+    for (let i = 0; i < mutations.length; i++) {
+      const added = mutations[i].addedNodes;
+      for (let j = 0; j < added.length; j++) {
+        walkTree(added[j], selectors, ignoreSelectors, politenessOverride);
+      }
     }
   });
 
